@@ -4,9 +4,7 @@ output: html_document
 ---
 
 
-## Name
-
-Please enter your name here.
+## Carly Gaudin
 
 ### Setup
 
@@ -15,7 +13,10 @@ Read in the data with `read_csv()` and store the data as an R object named `data
 
 ```{r}
 ## Load the data and any necessary packages here.
-
+library(readr)
+library(ggplot2)
+library(dplyr)
+dataset <- read_csv('maacs.csv.gz')
 ```
 
 ## Part 1
@@ -32,7 +33,25 @@ NOTE: For this part, do not use any plots.
 
 ```{r}
 ## Write your function here
-
+fev1_age_correlation <- function(dataset) {
+  # remove rows with NA values for fev1 and age variables
+  clean_data <- dataset %>%
+    filter(!is.na(fev1) & !is.na(age))
+  
+  # determine mean age for the whole dataset
+  mean_age <- mean(clean_data$age)
+  
+  # split dataset into older and younger datasets based on mean age
+  younger_children <- dataset[clean_data$age <= mean_age, ]
+  older_children <- dataset[clean_data$age > mean_age, ]
+  
+  # determine mean of fev1 for the younger and older dataset
+  young_avg_fev1 <- mean(younger_children$fev1, na.rm = TRUE)
+  old_avg_fev1 <- mean(older_children$fev1, na.rm = TRUE)
+  
+  # return TRUE if older children have a higher average fev1 value than     younger children, return FALSE otherwise
+  return(old_avg_fev1 > young_avg_fev1)
+}
 ```
 
 
@@ -43,13 +62,14 @@ Fit a linear regression model with FEV1 as the outcome and age as a predictor.
 How much does FEV1 change for a 1-year increase in the child's age? 
 
 ```{r}
-## Add your code here
+# fit linear regression model
+model <- lm(fev1 ~ age, data = dataset)
 
+# extract slope
+coef(model)["age"]
 ```
 
-
-Write your data analysis statement interpreting the regression model here:
-
+Th estimated slope coefficient for age was about 0.17. This means that, on average, for a one-year increase in a child's age, the FEV1 value increases about 0.17 liters.
 
 
 ## Part 3
@@ -59,18 +79,40 @@ Develop **three** supporting premises derived from the data that support the sta
 NOTE: At least one supporting premise should use a plot.
 
 ```{r}
-## Add your code here
+# Supporting premise #1 
+# scatterplot using Age and FEV! to show their relationship
+ggplot(dataset, aes(x = age, y = fev1)) +
+  geom_point(color = "blue") +
+  labs(title = "Relationship between Age and FEV1",
+       x = "Age (years)", y = "FEV1 (liters)")
 
+# Supporting Premise #2
+# determine mean age for the whole dataset
+mean_age <- mean(dataset$age, na.rm = TRUE)
+  
+# mean of fev1 value of the older children (older than the mean of all children)
+older_children <- dataset[dataset$age > mean_age, ]
+old_avg_fev1 <- mean(older_children$fev1, na.rm = TRUE)
+old_avg_fev1
+
+# mean of fev1 value of the younger children (younger or same age of all children)
+younger_children <- dataset[dataset$age <= mean_age, ]
+young_avg_fev1 <- mean(younger_children$fev1, na.rm = TRUE)
+young_avg_fev1
+
+# Supporting Premise #3
+# correlation value of age and fev1 values, disregarding NA values
+cor(dataset$age, dataset$fev1, use = "complete.obs")
 ```
 
 
 Write the three supporting premise statements here:
 
-1. 
+1. My scatterplot of Age vs. FEV1 shows a positive trend, where older children typically have a higher FEV1 value. This evidence supports a positive realtionship betwee age and FEV1.
 
-2. 
+2. When splitting the children into two groupd based on the mean age, the average FEV1 value of older children is higher than the average FEV1 value of younger children. This group comparison reinforces the idea that older children have higher FEV1 values.
 
-3. 
+3. The correlation coefficient between age and FEV1 is postive, confirming that as age increase, FEV1 typically increases as well. 
 
 
 ## Part 4
@@ -86,23 +128,62 @@ For statements involving plots, instead of returning `TRUE` or `FALSE`, you func
 
 ```{r}
 ## Function for supporting premise statement 1
-
+# plot showing relationship between age and fev1
+supporting_premise1 <- function(dataset) {
+  library(ggplot2)
+  
+  # Actual plot
+  p1 <- ggplot(dataset, aes(x = age, y = fev1)) +
+    geom_point(color = "blue") +
+    labs(title = "Observed Relationship between Age and FEV1",
+         x = "Age (years)", y = "FEV1 (liters)")
+  print(p1)
+  
+  # hypothetical plot (simulated upward trend)
+  sim_data <- data.frame(
+  age = seq(min(dataset$age, na.rm = TRUE), 
+            max(dataset$age, na.rm = TRUE), length.out = 100),
+  fev1 = seq(min(dataset$fev1, na.rm = TRUE), 
+             max(dataset$fev1, na.rm = TRUE), length.out = 100) + rnorm(100, 0, 0.1))
+  
+  p2 <- ggplot(sim_data, aes(x = age, y = fev1)) +
+    geom_point(color = "blue") +
+    labs(title = "Hypothetical Positive Relationship (if premise is true)",
+         x = "Age (years)", y = "FEV1 (liters)")
+  print(p2)}
 ```
 
 
 ```{r}
 ## Function for supporting premise statement 2
-
+# compare mean fev1 of older vs younger children
+supporting_premise2 <- function(dataset) {
+  mean_age <- mean(dataset$age, na.rm = TRUE)
+  
+  old_avg_fev1 <- mean(dataset$fev1[dataset$age > mean_age], na.rm = TRUE)
+  young_avg_fev1 <- mean(dataset$fev1[dataset$age <= mean_age], na.rm = TRUE)
+  
+  return(old_avg_fev1 > young_avg_fev1) }
 ```
 
 
 ```{r}
 ## Function for supporting premise statement 3
-
+# check correlation between age and fev1
+supporting_premise3 <- function(dataset) {
+  correlation <- cor(dataset$age, dataset$fev1, use = "complete.obs")
+  
+  return(correlation > 0)}
 ```
 
 Execute each of your function and show that the produce the expected output.
+```{r}
+# running each premise function
+supporting_premise1(dataset)   # produces observed + hypothetical plots
+supporting_premise2(dataset)   # returns TRUE or FALSE
+supporting_premise3(dataset)   # returns TRUE or FALSE
 
+```
 
 
 
