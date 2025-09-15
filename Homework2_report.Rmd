@@ -42,8 +42,8 @@ fev1_age_correlation <- function(dataset) {
   mean_age <- mean(clean_data$age)
   
   # split dataset into older and younger datasets based on mean age
-  younger_children <- dataset[clean_data$age <= mean_age, ]
-  older_children <- dataset[clean_data$age > mean_age, ]
+  younger_children <- clean_data[clean_data$age <= mean_age, ]
+  older_children <- clean_data[clean_data$age > mean_age, ]
   
   # determine mean of fev1 for the younger and older dataset
   young_avg_fev1 <- mean(younger_children$fev1, na.rm = TRUE)
@@ -52,6 +52,8 @@ fev1_age_correlation <- function(dataset) {
   # return TRUE if older children have a higher average fev1 value than     younger children, return FALSE otherwise
   return(old_avg_fev1 > young_avg_fev1)
 }
+
+fev1_age_correlation(dataset)
 ```
 
 
