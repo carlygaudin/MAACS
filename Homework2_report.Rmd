@@ -82,25 +82,21 @@ NOTE: At least one supporting premise should use a plot.
 
 ```{r}
 # Supporting premise #1 
-# scatterplot using Age and FEV! to show their relationship
+# scatterplot using Age and FEV1 to show their relationship
 ggplot(dataset, aes(x = age, y = fev1)) +
   geom_point(color = "blue") +
   labs(title = "Relationship between Age and FEV1",
        x = "Age (years)", y = "FEV1 (liters)")
 
 # Supporting Premise #2
-# determine mean age for the whole dataset
-mean_age <- mean(dataset$age, na.rm = TRUE)
-  
-# mean of fev1 value of the older children (older than the mean of all children)
-older_children <- dataset[dataset$age > mean_age, ]
-old_avg_fev1 <- mean(older_children$fev1, na.rm = TRUE)
-old_avg_fev1
+# create a variable in the dataset that indicates if the child is in the older or younger age group
+dataset <- dataset %>%
+  mutate(age_group = ifelse(age > mean(age, na.rm = TRUE), "Older", "Younger"))
 
-# mean of fev1 value of the younger children (younger or same age of all children)
-younger_children <- dataset[dataset$age <= mean_age, ]
-young_avg_fev1 <- mean(younger_children$fev1, na.rm = TRUE)
-young_avg_fev1
+# create a box plot to show the side by side comparison of distribution of fev1 values in both age groups
+ggplot(dataset, aes(x = age_group, y = fev1, fill = age_group)) +
+  geom_boxplot() +
+  labs(title="FEV1 by Age Group", x="Age Group", y="FEV1 (liters)")
 
 # Supporting Premise #3
 # correlation value of age and fev1 values, disregarding NA values
@@ -110,11 +106,11 @@ cor(dataset$age, dataset$fev1, use = "complete.obs")
 
 Write the three supporting premise statements here:
 
-1. My scatterplot of Age vs. FEV1 shows a positive trend, where older children typically have a higher FEV1 value. This evidence supports a positive realtionship betwee age and FEV1.
+1. My scatterplot of Age vs. FEV1 shows a positive trend, where older children typically have a higher FEV1 value. This evidence supports a positive relationship between age and FEV1.
 
-2. When splitting the children into two groupd based on the mean age, the average FEV1 value of older children is higher than the average FEV1 value of younger children. This group comparison reinforces the idea that older children have higher FEV1 values.
+2. My box plot graph showing the distribution of FEV1 values by age group, emphasizes the statement FEV1 values increase in older children.
 
-3. The correlation coefficient between age and FEV1 is postive, confirming that as age increase, FEV1 typically increases as well. 
+3. The correlation coefficient between age and FEV1 is positive, confirming that as age increase, FEV1 typically increases as well. 
 
 
 ## Part 4
@@ -160,12 +156,15 @@ supporting_premise1 <- function(dataset) {
 ## Function for supporting premise statement 2
 # compare mean fev1 of older vs younger children
 supporting_premise2 <- function(dataset) {
-  mean_age <- mean(dataset$age, na.rm = TRUE)
-  
-  old_avg_fev1 <- mean(dataset$fev1[dataset$age > mean_age], na.rm = TRUE)
-  young_avg_fev1 <- mean(dataset$fev1[dataset$age <= mean_age], na.rm = TRUE)
-  
-  return(old_avg_fev1 > young_avg_fev1) }
+# create a variable in the dataset that indicates if the child is in the older or younger age group
+  dataset <- dataset %>%
+    mutate(age_group = ifelse(age > mean(age, na.rm = TRUE), "Older", "Younger"))
+
+# create a box plot to show the side by side comparison of distribution of fev1 values in both age groups
+  ggplot(dataset, aes(x = age_group, y = fev1, fill = age_group)) +
+    geom_boxplot() +
+    labs(title="FEV1 by Age Group", x="Age Group", y="FEV1 (liters)") }
+
 ```
 
 
